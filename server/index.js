@@ -32,7 +32,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-// app.use(express.static('build'));
+app.use(express.static('build'));
 
 app.get('/api/v1/words/by-letter/:letters', async function (req, res) {
     const lettersParam = req && req.params && req.params.letters ? req.params.letters : null;
@@ -140,16 +140,24 @@ function calculateScore(word, char, scoresByWord, scoresRanking) {
             word: word,
         });
 
-        scoresRanking.sort(sortByScore);
+        scoresRanking.sort(sortByScoreAndLength);
     }
 }
 
-function sortByScore(a, b) {
+function sortByScoreAndLength(a, b) {
     if (a.score < b.score) {
         return 1;
     }
 
     if (a.score > b.score) {
+        return -1;
+    }
+
+    if (a.word.length < b.word.length) {
+        return 1;
+    }
+
+    if (a.word.length > b.word.length) {
         return -1;
     }
 
