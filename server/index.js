@@ -1,15 +1,11 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-// const db = require('./database');
 const https = require('https');
 const helmet = require('helmet');
-// const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
-// const cookieParser = require('cookie-parser');
 const scoresByLetter = JSON.parse(fs.readFileSync('./server/data/scoresByLetter.json').toString());
-const scoresByWord = {};
 
 let options = {
     key: fs.readFileSync(path.join(__dirname, '../certificates', 'RootCA.key')),
@@ -17,8 +13,6 @@ let options = {
 };
 
 app.use(helmet());
-// app.use(bodyParser.json());
-// app.use(cookieParser());
 
 const port = '3000';
 
@@ -30,6 +24,7 @@ app.use(
         optionsSuccessStatus: 200,
     }),
 );
+
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', `https://localhost:${port}`);
     res.set("Content-Security-Policy", "default-src *; style-src 'self' http://* 'unsafe-inline'; script-src 'self' http://* 'unsafe-inline' 'unsafe-eval'")
@@ -38,15 +33,7 @@ app.use(function (req, res, next) {
 
 // app.use(express.static('build'));
 
-
-// console.log('words', words.length);
-
-// create new user
 app.get('/api/v1/:letters', async function (req, res) {
-    // console.log('req.params', req.params);
-
-    // req.params = null;
-
     const lettersParam = req && req.params && req.params.letters ? req.params.letters : null;
 
     if (!lettersParam) {
@@ -70,51 +57,16 @@ app.get('/api/v1/:letters', async function (req, res) {
     });
 
     const potentialWords = getPotentialWords(lettersSet);
+    const result = filterValidWords(potentialWords, lettersSet);
 
-    filterValidWords(potentialWords, lettersSet);
-
-    //
-
-    // // TODO some validation/sanitization for security resons
-    // const dataUser = { ...req.body };
-
-    // const result = await db.insert(
-    //     'users',
-    //     Object.keys(dataUser),
-    //     [dataUser],
-    // );
-
-    // if (result) {
-    //     if (result.error) {
-    //         res.json(result.error);
-    //     } else {
-    //         login(dataUser, res);
-    //     }
-    // } else {
-    //     //TO DO validation/error handling
-    // }
-
-    res.send(Array.from(lettersSet));
+    res.send(result);
 });
-
-// // login, create new session
-// app.post('/api/v1/session', async function (req, res) {
-//     login(req.body, res);
-// });
-
-// // logout
-// app.delete('/api/v1/session', auth, async function (req, res) {
-//     //TO DO delete session from database
-//     res.json(true);
-// });
 
 https.createServer(options, app).listen(3001);
 
 function getPotentialWords(lettersSet) {
     const wordsByFirstLetter = JSON.parse(fs.readFileSync('./server/data/wordsByFirstLetter.json').toString());
     let potencialWords = {};
-
-    // console.log('wordsByFirstLetter', wordsByFirstLetter);
 
     lettersSet.forEach((letter) => {
         const lowerLetter = letter.toLowerCase();
@@ -123,14 +75,14 @@ function getPotentialWords(lettersSet) {
         potencialWords[lowerLetter] = listOfWords;
     });
 
-    // console.log('potencialWords', potencialWords);
-
     return potencialWords;
 }
 
 function filterValidWords(potencialWords, lettersSet) {
     const letters = Array.from(lettersSet);
     const filteredWords = {};
+    const scoresByWord = {};
+    const scoresRanking = [];
 
     for (const letter in potencialWords) {
         filteredWords[letter] = potencialWords[letter].filter((word) => {
@@ -144,55 +96,44 @@ function filterValidWords(potencialWords, lettersSet) {
                     break;
                 }
 
-                calculateScore(word, char);
+                calculateScore(word, char, scoresByWord, scoresRanking);
             }
 
             return includes;
         });
     }
 
-    console.log('filteredWords', filteredWords);
-    console.log('scoresByWord', scoresByWord);
+    return {
+        validWords: filteredWords,
+        scoresRanking: scoresRanking,
+    };
 }
 
-function calculateScore(word, char) {
+function calculateScore(word, char, scoresByWord, scoresRanking) {
     scoresByWord[word] = scoresByWord[word] || { accumulatedValue: 0, index: 0 };
     const score = scoresByWord[word];
 
     score.accumulatedValue = score.accumulatedValue + scoresByLetter[char].value;
     score.index++;
 
-    return score;
-}
+    if (score.index === word.length) {
+        scoresRanking.push({
+            score: score.accumulatedValue,
+            word: word,
+        });
 
-async function auth(req, res, next) {
-    if (!req.cookies.id_token) {
-        res.sendStatus(401);
-        return;
-    }
-
-    if (req.cookies.id_token === '$9gF5ZBptpNBaVBp0!EhvO9&5gg#DizG%#UEKoaqs3DqdpYRpZ') {
-        next();
+        scoresRanking.sort(sortByScore);
     }
 }
 
-async function login(data, res) {
-    const result = await db.users.get(data.email, data.password);
-    // TO DO make hash of password
-
-    if (result) {
-        const now = new Date().getTime();
-        const dayInMillisec = 24 * 60 * 60 * 1000;
-        const expire = new Date(now + dayInMillisec);
-        const options = 'Secure; Path=/; HttpOnly';
-        const token = '$9gF5ZBptpNBaVBp0!EhvO9&5gg#DizG%#UEKoaqs3DqdpYRpZ';
-        // TODO generate a signed JWT
-
-        // TO DO create session on the database const session = db.sessions.create(result);
-
-        res.header('Set-Cookie', 'id_token=' + token + '; Expires=' + expire + '; ' + options);
-        res.json(result);
-    } else {
-        res.sendStatus(401);
+function sortByScore(a, b) {
+    if (a.score < b.score) {
+        return 1;
     }
+
+    if (a.score > b.score) {
+        return -1;
+    }
+
+    return 0;
 }
