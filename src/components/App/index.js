@@ -2,21 +2,15 @@ import React, { useEffect, useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { Button } from '@material-ui/core';
 import Switch from '@material-ui/core/Switch';
 
-import dataService from './../../services/data';
+import dataService from '../../services/data';
 
 const useStyles = makeStyles(theme => ({
   root: {
     margin: '50px',
-    // display: 'flex',
-    // alignItems: 'center',
-    // justifyContent: 'center',
-    // height: theme.spacing(50)
   },
   imgHeader: {
-    // display: 'none',
     maxWidth: '100%',
   },
   mobile: {
@@ -27,9 +21,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const selectedLetters = {};
-
-function Dummy() {
+function App() {
   const allLeters = [
     "a",
     "b",
@@ -103,15 +95,8 @@ function Dummy() {
                 color="primary"
               />
             </span>
-
-            // </>
           );
         })}
-
-        <br />
-        <br />
-        <br />
-        <br />
 
         <Result scoresRanking={scoresRanking} />
       </form>
@@ -119,7 +104,7 @@ function Dummy() {
   )
 
   function Result({ scoresRanking }) {
-    if (scoresRanking) {
+    if (scoresRanking && scoresRanking.length) {
       return (
         <table>
           <thead>
@@ -129,35 +114,30 @@ function Dummy() {
             </tr>
           </thead>
           <tbody>
-
             {
               scoresRanking.map((score, index) => {
-                return (
-                  <>
-                    <tr>
-                      <td key={index} variant="outlined" color="primary">
+                if (index < 10) {
+                  return (
+                    <tr key={index}>
+                      <td variant="outlined" color="primary">
                         {score.word}
                       </td>
-                      <td key={index + '-score'} variant="outlined" color="primary">
+                      <td variant="outlined" color="primary">
                         {score.score}
                       </td>
                     </tr>
-                  </>
-                );
+                  );
+                } else {
+                  return null;
+                }
               })
             }
-            {/*
-          {scoresRanking.map((letter, index) => {
-            return 'bla'
-          })} */}
           </tbody>
         </table>
       );
     } else {
-      return <div>Please select available letters.</div>
+      return <div>Please select more available letters.</div>
     }
-
-
   }
 
   function handleChange(letter) {
@@ -183,4 +163,4 @@ function Dummy() {
   }
 }
 
-export default Dummy;
+export default App;

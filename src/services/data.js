@@ -10,49 +10,12 @@ async function getWords(letters) {
     const result = await get('/api/v1/' + letters.join(','));
 
     return result;
-    // return new Promise(async (resolve, reject) => {
-
-    // });
 }
 
 async function get(url) {
     const response = await fetch(
         apiUrl + url,
         { ...getOptions() },
-    );
-
-    if (handleErrors(response)) {
-        return;
-    }
-
-    return await parseBody(response);
-}
-
-async function post(url, data) {
-    const response = await fetch(
-        apiUrl + url,
-        {
-            ...getOptions(),
-            method: 'POST',
-            body: JSON.stringify(data || {}),
-        },
-    );
-
-    if (handleErrors(response)) {
-        return;
-    }
-
-    return await parseBody(response);
-}
-
-async function deleteFetch(url, data) {
-    const response = await fetch(
-        apiUrl + url,
-        {
-            ...getOptions(),
-            method: 'DELETE',
-            body: JSON.stringify(data || {}),
-        },
     );
 
     if (handleErrors(response)) {
