@@ -2,19 +2,26 @@ let apiUrl = 'http://localhost:3001';
 
 const dataService = {
     getWords,
+    getDefinition,
 }
 
 export default dataService;
 
 async function getWords(letters) {
-    const result = await get('/api/v1/' + letters.join(','));
+    const result = await get(apiUrl + '/api/v1/words/by-letter/' + letters.join(','));
+
+    return result;
+}
+
+async function getDefinition(word) {
+    const result = await get(apiUrl + '/api/v1/words/definition/' + word);
 
     return result;
 }
 
 async function get(url) {
     const response = await fetch(
-        apiUrl + url,
+        url,
         { ...getOptions() },
     );
 

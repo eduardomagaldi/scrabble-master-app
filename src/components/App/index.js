@@ -4,6 +4,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Switch from '@material-ui/core/Switch';
 
+import Definition from '../Definition'
+
 import dataService from '../../services/data';
 
 const useStyles = makeStyles(theme => ({
@@ -62,7 +64,7 @@ function App() {
     (async function () {
       if (Object.keys(selectedLetters).length) {
         const result = await dataService.getWords(Object.keys(selectedLetters));
-        console.log('result', result);
+
         setScoresRanking(result.scoresRanking);
       }
     }());
@@ -103,43 +105,6 @@ function App() {
     </div>
   )
 
-  function Result({ scoresRanking }) {
-    if (scoresRanking && scoresRanking.length) {
-      return (
-        <table>
-          <thead>
-            <tr>
-              <th>Word</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              scoresRanking.map((score, index) => {
-                if (index < 10) {
-                  return (
-                    <tr key={index}>
-                      <td variant="outlined" color="primary">
-                        {score.word}
-                      </td>
-                      <td variant="outlined" color="primary">
-                        {score.score}
-                      </td>
-                    </tr>
-                  );
-                } else {
-                  return null;
-                }
-              })
-            }
-          </tbody>
-        </table>
-      );
-    } else {
-      return <div>Please select more available letters.</div>
-    }
-  }
-
   function handleChange(letter) {
     return (event) => {
       if (event.target.checked) {
@@ -164,3 +129,46 @@ function App() {
 }
 
 export default App;
+
+function Result({ scoresRanking }) {
+  if (scoresRanking && scoresRanking.length) {
+    return (
+      <table>
+        <thead>
+          <tr>
+            <th>Word</th>
+            <th>Score</th>
+            <th>Definition</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            scoresRanking.map((score, index) => {
+              if (index < 10) {
+                return (
+                  <tr key={index}>
+                    <td>
+                      {score.word}
+                    </td>
+
+                    <td>
+                      {score.score}
+                    </td>
+
+                    <td variant="outlined" color="primary">
+                      <Definition show={index < 5} word={score.word} />
+                    </td>
+                  </tr>
+                );
+              } else {
+                return null;
+              }
+            })
+          }
+        </tbody>
+      </table>
+    );
+  } else {
+    return <div>Please select more available letters.</div>
+  }
+}

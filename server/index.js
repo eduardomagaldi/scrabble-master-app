@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const app = express();
 const cors = require('cors');
 const scoresByLetter = JSON.parse(fs.readFileSync('./server/data/scoresByLetter.json').toString());
+const https = require("https");
 
 let options = {
     key: fs.readFileSync(path.join(__dirname, '../certificates', 'RootCA.key')),
@@ -33,7 +34,7 @@ app.use(function (req, res, next) {
 
 // app.use(express.static('build'));
 
-app.get('/api/v1/:letters', async function (req, res) {
+app.get('/api/v1/words/by-letter/:letters', async function (req, res) {
     const lettersParam = req && req.params && req.params.letters ? req.params.letters : null;
 
     if (!lettersParam) {
@@ -60,6 +61,23 @@ app.get('/api/v1/:letters', async function (req, res) {
     const result = filterValidWords(potentialWords, lettersSet);
 
     res.send(result);
+});
+
+app.get('/api/v1/words/definition/:word', async function (req, res) {
+    const word = req && req.params && req.params.word ? req.params.word : null;
+    const url = 'https://api.dictionaryapi.dev/api/v2/entries/en_US/' + req.params.word;
+
+    https.get(url, response => {
+        response.setEncoding("utf8");
+        let body = "";
+        response.on("data", data => {
+            body += data;
+        });
+        response.on("end", () => {
+            body = JSON.parse(body);
+            res.send(body);
+        });
+    });
 });
 
 http.createServer(options, app).listen(3001);
