@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+const http = require('http');
 const helmet = require('helmet');
 const app = express();
 const cors = require('cors');
@@ -18,7 +18,7 @@ const port = '3000';
 
 app.use(
     cors({
-        origin: `https://localhost:${port}`,
+        origin: `http://localhost:${port}`,
         credentials: true,
         exposedHeaders: 'Location',
         optionsSuccessStatus: 200,
@@ -26,7 +26,7 @@ app.use(
 );
 
 app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', `https://localhost:${port}`);
+    res.header('Access-Control-Allow-Origin', `http://localhost:${port}`);
     res.set("Content-Security-Policy", "default-src *; style-src 'self' http://* 'unsafe-inline'; script-src 'self' http://* 'unsafe-inline' 'unsafe-eval'")
     next();
 });
@@ -62,7 +62,7 @@ app.get('/api/v1/:letters', async function (req, res) {
     res.send(result);
 });
 
-https.createServer(options, app).listen(3001);
+http.createServer(options, app).listen(3001);
 
 function getPotentialWords(lettersSet) {
     const wordsByFirstLetter = JSON.parse(fs.readFileSync('./server/data/wordsByFirstLetter.json').toString());
