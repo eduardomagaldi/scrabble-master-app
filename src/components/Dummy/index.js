@@ -5,23 +5,30 @@ import { Button } from '@material-ui/core'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: theme.spacing(50)
+    // display: 'flex',
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    // height: theme.spacing(50)
+  },
+  imgHeader: {
+    // display: 'none',
+    maxWidth: '100%',
   }
-}))
+}));
 
-function Dummy({ bla }) {
-  const classes = useStyles()
+function Dummy() {
+  const classes = useStyles();
 
   return (
-    <div className={classes.root}>
-      <img src="/header.jpg" />
+    <div>
+      <img
+        className={classes.imgHeader}
+        alt="SCRABBLE"
+        src="/header.png" />
 
-      <Button color="primary" onClick={() => { console.log('Hello App!') }}>Hello World!</Button>
+      {/* <Button color="primary" onClick={() => { console.log('Hello App!') }}>Hello World!</Button> */}
     </div>
   )
 }
 
-export default Dummy
+export default Dummy;

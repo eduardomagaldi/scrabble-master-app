@@ -1,6 +1,6 @@
-import React from 'react'
-
-import Dummy from './components/Dummy'
+import React from 'react';
+import Dummy from './components/Dummy';
+import 'normalize.css';
 
 function App() {
   return (
