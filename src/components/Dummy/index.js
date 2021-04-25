@@ -12,11 +12,13 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function Dummy ({  }) {
+function Dummy({ bla }) {
   const classes = useStyles()
 
   return (
     <div className={classes.root}>
+      <img src="/header.jpg" />
+
       <Button color="primary" onClick={() => { console.log('Hello App!') }}>Hello World!</Button>
     </div>
   )
